@@ -1,0 +1,8 @@
+An interactive video wall made for the LA Youtube / Google TV Hackathon by Jacob Sharf and Yoav Zimmerman
+
+Uses Google App Engine, HTML, CSS, Javascript/JQuery.
+
+Todo:
+Infinite Wall scrolling
+Instant search (without overloading the Youtube Data API)
+Clean up frontend design 
