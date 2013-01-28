@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Video Wall</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- bootstrap css -->
+		<link href="stylesheets/bootstrap.min.css" rel="stylesheet" media="screen"> 
+	    <!-- our css -->
+        <link href="stylesheets/style.css" rel="stylesheet" media="screen">
+        <script src="http://www.google.com/jsapi"></script>	
+        <script type="text/javascript">
+      		google.load("swfobject", "2.1");
+      		google.load("jquery", "1.4.2");
+    	</script>
+    	<script type="text/javascript">
+			var vidPercent = 0.25;
+
+			var vids;
+			var num;
+			var mouseX;
+			var numColumns;
+
+			function playAll()
+			{
+				for(var i=0; i<num; i++)
+				{
+					var yt = document.getElementById("player"+i);
+					yt.playVideo();
+				}
+			}
+
+			function pauseAll()
+			{
+				for(var i=0; i<num; i++)
+				{
+					var yt = document.getElementById("player"+i);
+					yt.pauseVideo();
+				}
+			}
+
+			function toggleMute()
+			{
+				for(var i=0; i<num; i++)
+				{
+					var yt = document.getElementById("player"+i);
+					if (yt.isMuted())
+					{
+						yt.unmute();
+					}
+					else
+					{
+						yt.mute();
+					}
+
+				}
+
+			}
+			function onYoutubePlayerReady(player)
+	      	{
+	      		var number = parseInt(player);
+	      		loadVideoById(vids[number], 5);
+	      		//console.log('hi');
+	      	}
+	      	
+	      	function loadVideo(videoID, i, width, height)
+	      	{
+		        // Lets Flash from another domain call JavaScript
+		        var params = { allowScriptAccess: "always", controls: "0", showinfo: "0" };
+		        // The element id of the Flash embed
+		        var atts = { id: "player"+i, styleclass: "container"};
+		        // All of the magic handled by SWFObject (http://code.google.com/p/swfobject/)
+		        swfobject.embedSWF("http://www.youtube.com/v/"+videoID+"?enablejsapi=1&playerapiid="+i+"&version=3&controls=0&showinfo=0",
+                       "player"+i,  width, height, "8", null, null, params, atts);
+	      	}
+
+	      	function setBarHeight(height)
+	      	{
+	      		$('#left').css('height', height);
+	      		$('#right').css('height', height);
+	      	}
+
+	      	function loadAllVideos()
+	    	 {	
+	    	 	numColumns = $(".column").length;
+	      		vids = new Array();
+				num = $(".video").length;
+				var width = document.documentElement.clientWidth*vidPercent;
+				var height = (9.0/16)*width;
+				setBarHeight(height*3-2);
+				for(var i = 0; i<num; i++)
+				{
+					var urlid = $("#player"+i).attr("data-urlid");
+					vids[i]=urlid;
+					loadVideo(urlid, i, width, height);
+				}
+		     }
+
+		     function bufferAll()
+		     {
+		     	for(var i=0; i<num; i++)
+				{
+					var yt = document.getElementById("player"+i);
+					yt.loadVideoById();
+				}
+		     }
+
+		var timer;
+		var speed;
+
+
+		function bounceBackLeft()
+		{
+		//console.log
+			if(parseInt($("#grid").css("left")) > 0)
+			{
+				//console.log("bounce back");
+				$("#grid").animate({left: "0%"}, 100, 'linear');
+			}
+		}
+
+		function leftScroll()
+		{
+			//console.log("left");
+			$("#grid").stop();
+			if(parseInt($("#grid").css("left")) < 0)
+				$("#grid").animate({left: "+="+speed+"%"}, 100, 'linear');
+		}
+
+		function center()
+		{
+			$("#grid").stop();
+			clearInterval(timer);
+		}
+
+		function rightScroll()
+		{
+			//console.log("right");
+			$("#grid").stop();
+			if(parseInt($("#grid").css("left")) > -(numColumns-4)*24)
+				$("#grid").animate({left: "-="+speed+"%"}, 100, 'linear');
+		}
+
+		function scrollHandle()
+		{
+			
+	        if(mouseX > document.documentElement.clientWidth*0.9)
+	        {
+	        		clearInterval(timer);
+	        		rightScroll();
+	        		timer = setInterval(leftScroll, 100);
+	        }
+	        else if(mouseX < document.documentElement.clientWidth*0.1)
+	        {
+	        		clearInterval(timer)
+	        		leftScroll();
+	        		timer = setInterval(rightScroll, 100);
+	        }
+			else
+			{
+				center();
+			}
+		}
+		function annihilate()
+		{
+			$('#progress-wrapper').hide();
+		}
+		function loadingBar()
+		{
+			$('#grid').fadeTo(500, 0.1);
+			$("#progress").animate({width: "100%"}, 10000, 'swing', function()
+				{
+					$('#grid').fadeTo(500,1, function(){
+					
+						setTimeout(annihilate, 1000);
+
+					});
+				});
+		}
+	    function _run() 
+	    {
+	        /*
+	        * Simple player embed
+	        */
+
+	        loadingBar();
+	        loadAllVideos();
+
+	        /*$(document).mousemove(function(e)
+	        	{
+	        		mouseX = e.pageX;
+	        		console.log(mouseX);
+	        	});
+	        setInterval(scrollHandle, 100);*/
+
+	        speed = 2;
+
+	        $(document).mouseup(function(){speed = 2;});
+	        $(document).mousedown(function(){speed = 6;});
+
+	        
+	        $("#left").mouseenter(function (e)
+	        {
+	        	clearInterval(timer);
+	        	leftScroll();
+	        	timer = setInterval(leftScroll, 100);
+
+	        });
+
+	        $("#right").mouseenter(function(e)
+	        {
+	        	clearInterval(timer);
+	        	rightScroll();
+	        	timer = setInterval(rightScroll, 100);
+	        });
+
+	        $("#right").mouseleave(function (e)
+	        {
+	        	center();
+	        });
+
+	        $("#left").mouseleave(function (e)
+	        {
+	        	center();
+	        })
+
+	        setInterval(bounceBackLeft, 100);
+
+	    }
+	      google.setOnLoadCallback(_run);
+		</script>
+	</head>
+	<body>
+
+
+ 	<!-- COPY pasted from bootstrap example !-->
+	<div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+      	<div class="span12 offset1">
+          <a class="brand" href="/">Wallie</a>
+            <form class="navbar-search" method="get">
+              <input type="text" placeholder="Search for a video" name="query">
+
+              <!--<input type="submit" value="Wallify!">!-->
+            </form><!--/.nav-collapse --></div>
+            <div class="navbar-button pull-right">
+              <button class="btn" onclick="playAll()">Play all</button>
+              <button class="btn" onclick="pauseAll()">Pause all</button>
+              <button class="btn" onclick="toggleMute()">Toggle mute</button>
+            </div>
+         </div>
+      </div>
+      <div id="left"></div>
+<div id="mask"><div class="progress progress-striped active" id="progress-wrapper">
+  <div class="bar" style="width: 0%;" id="progress"></div>
+</div>
+<div id="grid">{% for vidID, vidNumber in data %}{% if vidNumber % 3 == 0 %}<div class="column">{% endif %}<div class="video" id="player{{vidNumber}}" data-urlid="{{vidID}}"></div>{% if (vidNumber-2) % 3 == 0 %}</div>{% endif %}{% endfor %}</div>
+</div></div>
+	<div id="right"></div>
+    	<script src="js/bootstrap.min.js"></script>
+	</body>
+</html>

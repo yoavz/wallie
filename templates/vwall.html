@@ -1,0 +1,45 @@
+<html>
+<head>
+	<title> VWall </title>
+	<script src="http://code.jquery.com/jquery-latest.js"></script>
+	<script src="https://apis.google.com/js/client.js?onload=load"></script>
+	<script src="http://www.google.com/jsapi"></script>
+	<script> 
+	// Once the api loads call enable the search box.
+
+// Search for a given string.
+function load() {
+	gapi.client.load('youtube', 'v3');
+	gapi.client.setApiKey('AIzaSyBYnrYdbRZnpvoGfUblBdcOx9njmUL6lGY')
+}
+
+function search() {
+  var q = $('#query').val();
+  var request = gapi.client.youtube.search.list({
+    q: q,
+    part: 'snippet'
+  });
+
+  request.execute(function(response) {
+    var str = JSON.stringify(response.result);
+    $('#search-container').html('<pre>' + str + '</pre>');
+  });
+}
+
+function main() {
+
+}
+
+$(document).ready(main);
+	</script>
+</head>
+<body> 
+	 <div id="buttons">
+      <label> <input id="query" value='cats' type="text"/><button id="search-button" onclick="search()">Search</button></label>
+    </div>
+    <div id="search-container">
+    </div>
+
+
+</body>
+</html>
